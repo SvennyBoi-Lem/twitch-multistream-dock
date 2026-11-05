@@ -259,4 +259,31 @@ footer {
   }
 }
 
+/* REMOVE STREAM BUTTON */
+.remove-stream {
+  margin-left: auto;
+  background: transparent !important;
+  color: #b8b8c0;
+  border: none;
+  padding: 0 7px;
+  font-size: 23px;
+  line-height: 18px;
+  font-weight: 400;
+  cursor: pointer;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.remove-stream:hover {
+  background: #e33b45 !important;
+  color: #ffffff;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 
