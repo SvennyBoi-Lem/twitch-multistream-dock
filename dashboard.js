@@ -5,6 +5,7 @@
 
   const videos = document.getElementById("videos");
   const chats = document.getElementById("chats");
+  const status = document.getElementById("status");
 
   function validStream(stream) {
     if (!stream || typeof stream.id !== "string") return false;
@@ -50,24 +51,96 @@
     }
   }
 
-  const status = document.getElementById("status");
+  function streamKey(stream) {
+    return stream.platform + ":" + stream.id;
+  }
 
-  status.textContent = streams.length
-    ? streams.length + " stream(s) loaded"
-    : "No streams loaded. Add streams using the extension.";
+  // Save the current streams and update the URL without refreshing.
+  function saveStreams() {
+    localStorage.setItem("smd-streams", JSON.stringify(streams));
+
+    const url = new URL(location.href);
+
+    if (streams.length) {
+      url.searchParams.set("streams", JSON.stringify(streams));
+    } else {
+      url.searchParams.delete("streams");
+    }
+
+    history.replaceState(null, "", url.toString());
+  }
+
+  function updateStatus() {
+    status.textContent = streams.length
+      ? streams.length + " stream(s) loaded"
+      : "No streams loaded. Add streams using the extension.";
+  }
+
+  // Remove a stream and its matching chat immediately.
+  function removeStream(key) {
+    streams = streams.filter(stream => streamKey(stream) !== key);
+
+    const videoPanel = videos.querySelector(
+      '[data-stream-key="' + CSS.escape(key) + '"]'
+    );
+
+    const chatPanel = chats.querySelector(
+      '[data-stream-key="' + CSS.escape(key) + '"]'
+    );
+
+    videoPanel?.remove();
+    chatPanel?.remove();
+
+    saveStreams();
+    updateStatus();
+
+    if (!streams.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty";
+      empty.textContent =
+        "No streams loaded. Add streams using the extension.";
+
+      videos.append(empty);
+    }
+  }
 
   function createPanel(stream, kind) {
     const panel = document.createElement("article");
     panel.className = "panel";
+    panel.dataset.streamKey = streamKey(stream);
 
     const title = document.createElement("div");
     title.className = "panel-title";
 
     const platform = stream.platform.toUpperCase();
 
-    title.textContent = kind === "video"
+    const label = document.createElement("span");
+
+    label.textContent = kind === "video"
       ? "LIVE · " + platform + " · " + stream.id
       : platform + " · CHAT";
+
+    title.append(label);
+
+    // Add a removal button to each video panel.
+    if (kind === "video") {
+      const removeButton = document.createElement("button");
+
+      removeButton.className = "remove-stream";
+      removeButton.type = "button";
+      removeButton.textContent = "×";
+      removeButton.title = "Remove stream and its chat";
+      removeButton.setAttribute(
+        "aria-label",
+        "Remove " + platform + " stream and chat"
+      );
+
+      removeButton.addEventListener("click", () => {
+        removeStream(streamKey(stream));
+      });
+
+      title.append(removeButton);
+    }
 
     const frame = document.createElement("iframe");
 
@@ -121,19 +194,24 @@
 
       if (stream.platform === "kick") {
         const message = document.createElement("div");
+
         message.style.padding = "16px";
         message.style.color = "#efeff1";
         message.textContent =
           "Kick chat is not available as a verified official embed yet.";
 
         const link = document.createElement("a");
-        link.href = "https://kick.com/" + encodeURIComponent(stream.id);
+
+        link.href =
+          "https://kick.com/" + encodeURIComponent(stream.id);
+
         link.target = "_blank";
         link.rel = "noopener noreferrer";
         link.textContent = "Open Kick chat";
         link.style.color = "#53fc18";
 
         panel.append(title, message, link);
+
         return panel;
       }
     }
@@ -145,29 +223,43 @@
     return panel;
   }
 
-  if (!streams.length) {
-    const empty = document.createElement("div");
-    empty.className = "empty";
-    empty.textContent =
-      "Open a Twitch, YouTube or Kick stream, add it using the extension, and open the dashboard.";
+  // Render both grids.
+  function render() {
+    videos.replaceChildren();
+    chats.replaceChildren();
 
-    videos.append(empty);
-  } else {
-    localStorage.setItem("smd-streams", JSON.stringify(streams));
+    if (!streams.length) {
+      const empty = document.createElement("div");
 
-    streams.forEach(stream => {
-      videos.append(createPanel(stream, "video"));
-      chats.append(createPanel(stream, "chat"));
-    });
+      empty.className = "empty";
+      empty.textContent =
+        "Open a Twitch, YouTube or Kick stream, add it using the extension, and open the dashboard.";
+
+      videos.append(empty);
+    } else {
+      streams.forEach(stream => {
+        videos.append(createPanel(stream, "video"));
+        chats.append(createPanel(stream, "chat"));
+      });
+    }
+
+    updateStatus();
   }
+
+  // Save the initial stream list.
+  saveStreams();
+
+  render();
 
   document.getElementById("refresh").addEventListener(
     "click",
     () => location.reload()
   );
 
+  // Clear everything without requiring a dashboard refresh.
   document.getElementById("clear").addEventListener("click", () => {
-    localStorage.removeItem("smd-streams");
-    location.href = location.pathname;
+    streams = [];
+    saveStreams();
+    render();
   });
 })();
