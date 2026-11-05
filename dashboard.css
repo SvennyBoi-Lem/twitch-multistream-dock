@@ -465,5 +465,22 @@ footer {
     height: 100%;
   }
 }
+/* STREAM DRAG AND DROP */
+.drag-handle {
+  cursor: grab;
+  user-select: none;
+}
 
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.panel.dragging {
+  opacity: 0.45;
+}
+
+.panel.drag-over {
+  outline: 2px dashed #9147ff;
+  outline-offset: -2px;
+}
 
