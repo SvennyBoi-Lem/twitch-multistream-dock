@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Twitch Multistream Dock</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Twitch Multistream Dock</h1>
+      <p id="status">Loading your channels…</p>
+    </div>
+    <div class="actions">
+      <button id="refresh">Refresh</button>
+      <button id="clear">Clear dashboard</button>
+    </div>
+  </header>
+  <main id="layout" class="layout">
+    <section id="videos" class="videos" aria-label="Twitch streams"></section>
+    <section id="chats" class="chats" aria-label="Twitch chats"></section>
+  </main>
+  <footer>
+    <span>Streams are embedded from Twitch. Sign in to Twitch in this browser if a channel requires it.</span>
+    <span id="domain"></span>
+  </footer>
+  <script src="dashboard.js"></script>
+</body>
+</html>
