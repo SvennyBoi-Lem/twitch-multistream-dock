@@ -1,5 +1,7 @@
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 :root {
   color-scheme: dark;
@@ -25,9 +27,21 @@ body {
   border-bottom: 1px solid #303035;
 }
 
-h1 { font-size: 20px; margin: 0 0 4px; }
-.topbar p { margin: 0; color: #adadb8; font-size: 13px; }
-.actions { display: flex; gap: 8px; }
+h1 {
+  font-size: 20px;
+  margin: 0 0 4px;
+}
+
+.topbar p {
+  margin: 0;
+  color: #adadb8;
+  font-size: 13px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
 
 button {
   background: #9147ff;
@@ -39,40 +53,56 @@ button {
   cursor: pointer;
 }
 
-button:hover { background: #772ce8; }
-#clear { background: #34343b; }
+button:hover {
+  background: #772ce8;
+}
+
+#clear {
+  background: #34343b;
+}
 
 /* Main dashboard: streams left, chats right */
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: 12px;
-  padding: 12px;
+  gap: 10px;
+  padding: 10px;
   flex: 1;
   min-height: 0;
-  align-items: stretch;
+  overflow: hidden;
 }
 
-/* Both sections use flexible 2-column grids */
-
-/* Three panels: two on top, third across the entire bottom */
-.videos:has(iframe:nth-of-type(3)),
-.chats:has(iframe:nth-of-type(3)) {
+/* Flexible stream and chat grids */
+.videos,
+.chats {
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: minmax(260px, 1fr);
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+  align-content: start;
+  overflow-y: auto;
 }
 
-.videos:has(iframe:nth-of-type(3)) > :last-child,
-.chats:has(iframe:nth-of-type(3)) > :last-child {
-  grid-column: 1 / 3 !important;
-}
-
-
-/* A single stream or chat fills its entire section */
+/* One panel fills the available width */
 .videos:has(.panel:only-child),
 .chats:has(.panel:only-child) {
   grid-template-columns: minmax(0, 1fr);
 }
 
+.videos:has(.panel:only-child) .panel,
+.chats:has(.panel:only-child) .panel {
+  grid-column: 1 / -1;
+}
+
+/* Three panels: two above, one spanning below */
+.videos:has(.panel:nth-child(3):last-child) .panel:nth-child(3),
+.chats:has(.panel:nth-child(3):last-child) .panel:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+/* Individual stream/chat panels */
 .panel {
   background: #18181b;
   border: 1px solid #303035;
@@ -91,7 +121,6 @@ button:hover { background: #772ce8; }
   background: #202024;
   display: flex;
   justify-content: space-between;
-  flex-shrink: 0;
 }
 
 iframe {
@@ -102,7 +131,11 @@ iframe {
   background: #000;
 }
 
-.video-frame,
+.video-frame {
+  flex: 1;
+  aspect-ratio: 16 / 9;
+}
+
 .chat-frame {
   flex: 1;
 }
@@ -128,20 +161,42 @@ footer {
   gap: 12px;
 }
 
-/* Narrow desktop windows */
-@media (max-width: 850px) {
+/* Smaller screens: stack streams above chats */
+@media (max-width: 1100px) {
   .layout {
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-    gap: 8px;
-    padding: 8px;
+    grid-template-columns: minmax(0, 1fr);
+    overflow: auto;
   }
 
-  .videos, .chats { gap: 8px; }
+  .videos,
+  .chats {
+    grid-auto-rows: minmax(260px, auto);
+    overflow: visible;
+  }
 }
 
-/* Mobile only: stack streams and chats */
-@media (max-width: 560px) {
-  .layout { grid-template-columns: 1fr; }
-  .topbar { align-items: flex-start; flex-direction: column; }
-  .videos, .chats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 600px) {
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .videos,
+  .chats {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: minmax(260px, auto);
+  }
+
+  .videos .panel,
+  .chats .panel {
+    grid-column: 1 / -1;
+  }
+
+  .video-frame {
+    min-height: 250px;
+  }
+
+  .chat-frame {
+    min-height: 300px;
+  }
 }
