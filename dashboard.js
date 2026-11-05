@@ -55,7 +55,6 @@
     return stream.platform + ":" + stream.id;
   }
 
-  // Save the current streams and update the URL without refreshing.
   function saveStreams() {
     localStorage.setItem("smd-streams", JSON.stringify(streams));
 
@@ -76,20 +75,55 @@
       : "No streams loaded. Add streams using the extension.";
   }
 
-  // Remove a stream and its matching chat immediately.
+  function clearDragStyles() {
+    document.querySelectorAll(".drag-over").forEach(panel => {
+      panel.classList.remove("drag-over");
+    });
+  }
+
+  // Move existing panels without recreating their iframes.
+  function reorderPanels() {
+    streams.forEach(stream => {
+      const key = streamKey(stream);
+      const selector = '[data-stream-key="' + CSS.escape(key) + '"]';
+
+      const videoPanel = videos.querySelector(selector);
+      const chatPanel = chats.querySelector(selector);
+
+      if (videoPanel) videos.appendChild(videoPanel);
+      if (chatPanel) chats.appendChild(chatPanel);
+    });
+  }
+
+  function reorderStreams(sourceKey, targetKey) {
+    if (!sourceKey || !targetKey || sourceKey === targetKey) return;
+
+    const fromIndex = streams.findIndex(
+      stream => streamKey(stream) === sourceKey
+    );
+
+    const toIndex = streams.findIndex(
+      stream => streamKey(stream) === targetKey
+    );
+
+    if (fromIndex < 0 || toIndex < 0) return;
+
+    const movedStream = streams.splice(fromIndex, 1)[0];
+    streams.splice(toIndex, 0, movedStream);
+
+    reorderPanels();
+    saveStreams();
+    updateStatus();
+  }
+
   function removeStream(key) {
     streams = streams.filter(stream => streamKey(stream) !== key);
 
-    const videoPanel = videos.querySelector(
-      '[data-stream-key="' + CSS.escape(key) + '"]'
-    );
+    const selector =
+      '[data-stream-key="' + CSS.escape(key) + '"]';
 
-    const chatPanel = chats.querySelector(
-      '[data-stream-key="' + CSS.escape(key) + '"]'
-    );
-
-    videoPanel?.remove();
-    chatPanel?.remove();
+    videos.querySelector(selector)?.remove();
+    chats.querySelector(selector)?.remove();
 
     saveStreams();
     updateStatus();
@@ -105,15 +139,16 @@
   }
 
   function createPanel(stream, kind) {
+    const key = streamKey(stream);
+
     const panel = document.createElement("article");
     panel.className = "panel";
-    panel.dataset.streamKey = streamKey(stream);
+    panel.dataset.streamKey = key;
 
     const title = document.createElement("div");
     title.className = "panel-title";
 
     const platform = stream.platform.toUpperCase();
-
     const label = document.createElement("span");
 
     label.textContent = kind === "video"
@@ -122,7 +157,46 @@
 
     title.append(label);
 
-    // Add a removal button to each video panel.
+    // Drag streams by their title bars.
+    title.draggable = true;
+    title.classList.add("drag-handle");
+    title.title = "Drag to reorder this stream and its chat";
+
+    title.addEventListener("dragstart", event => {
+      draggedKey = key;
+
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", key);
+
+      panel.classList.add("dragging");
+    });
+
+    title.addEventListener("dragover", event => {
+      if (!draggedKey || draggedKey === key) return;
+
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+
+      clearDragStyles();
+      panel.classList.add("drag-over");
+    });
+
+    title.addEventListener("drop", event => {
+      event.preventDefault();
+
+      const sourceKey =
+        draggedKey || event.dataTransfer.getData("text/plain");
+
+      reorderStreams(sourceKey, key);
+
+      draggedKey = null;
+      clearDragStyles();
+
+      document.querySelectorAll(".dragging").forEach(item => {
+        item.classList.remove("dragging");
+      });
+    });
+
     if (kind === "video") {
       const removeButton = document.createElement("button");
 
@@ -135,8 +209,11 @@
         "Remove " + platform + " stream and chat"
       );
 
+      // Keep the remove button clickable, not draggable.
+      removeButton.draggable = false;
+
       removeButton.addEventListener("click", () => {
-        removeStream(streamKey(stream));
+        removeStream(key);
       });
 
       title.append(removeButton);
@@ -223,7 +300,17 @@
     return panel;
   }
 
-  // Render both grids.
+  let draggedKey = null;
+
+  document.addEventListener("dragend", () => {
+    draggedKey = null;
+    clearDragStyles();
+
+    document.querySelectorAll(".dragging").forEach(item => {
+      item.classList.remove("dragging");
+    });
+  });
+
   function render() {
     videos.replaceChildren();
     chats.replaceChildren();
@@ -246,9 +333,7 @@
     updateStatus();
   }
 
-  // Save the initial stream list.
   saveStreams();
-
   render();
 
   document.getElementById("refresh").addEventListener(
@@ -256,7 +341,6 @@
     () => location.reload()
   );
 
-  // Clear everything without requiring a dashboard refresh.
   document.getElementById("clear").addEventListener("click", () => {
     streams = [];
     saveStreams();
