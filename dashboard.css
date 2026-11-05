@@ -195,24 +195,43 @@ footer {
   }
 }
 
-/* STREAM MULTIGRID FIX */
-.videos,
-.chats {
-  display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  grid-auto-rows: minmax(260px, auto) !important;
-  align-content: start;
+/* STREAM MULTIGRID HEIGHT FIX */
+@media (min-width: 901px) {
+  html,
+  body {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  body {
+    height: 100vh;
+  }
+
+  .layout {
+    flex: 1;
+    height: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .videos,
+  .chats {
+    height: 100%;
+    min-height: 0;
+    grid-auto-rows: minmax(0, 1fr) !important;
+    align-content: stretch;
+  }
+
+  .panel {
+    min-height: 0;
+  }
+
+  .video-frame,
+  .chat-frame {
+    min-height: 0;
+    aspect-ratio: auto;
+  }
 }
 
-/* Three streams: two on top, third across the bottom */
-.videos > .panel:nth-child(3):last-child,
-.chats > .panel:nth-child(3):last-child {
-  grid-column: 1 / -1 !important;
-}
-
-/* One stream should use the full width */
-.videos > .panel:only-child,
-.chats > .panel:only-child {
-  grid-column: 1 / -1;
-}
 
