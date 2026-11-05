@@ -385,4 +385,85 @@ footer {
   }
 }
 
+/* DYNAMIC LAYOUT FOR STREAMS AND CHATS */
+@media (min-width: 901px) {
+
+  .videos,
+  .chats {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-auto-rows: minmax(0, 1fr) !important;
+    align-content: stretch !important;
+    min-height: 0;
+    height: 100%;
+  }
+
+  /* 1 panel: full area */
+  .videos:has(> .panel:only-child),
+  .chats:has(> .panel:only-child) {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: minmax(0, 1fr) !important;
+  }
+
+  /* 2 panels: side by side, full height */
+  .videos:has(> .panel:nth-child(2):last-child),
+  .chats:has(> .panel:nth-child(2):last-child) {
+    grid-template-rows: minmax(0, 1fr) !important;
+  }
+
+  /* 3 panels: 2 top, 1 bottom */
+  .videos:has(> .panel:nth-child(3):last-child),
+  .chats:has(> .panel:nth-child(3):last-child) {
+    grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* 4 panels: 2 x 2 */
+  .videos:has(> .panel:nth-child(4):last-child),
+  .chats:has(> .panel:nth-child(4):last-child) {
+    grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* 5 panels: 2 + 2 + 1 full width */
+  .videos:has(> .panel:nth-child(5):last-child),
+  .chats:has(> .panel:nth-child(5):last-child) {
+    grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  /* 6 panels: 2 x 3 */
+  .videos:has(> .panel:nth-child(6):last-child),
+  .chats:has(> .panel:nth-child(6):last-child) {
+    grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  /* 7 panels: 2 + 2 + 2 + 1 full width */
+  .videos:has(> .panel:nth-child(7):last-child),
+  .chats:has(> .panel:nth-child(7):last-child) {
+    grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  /* 8 panels: 2 x 4 */
+  .videos:has(> .panel:nth-child(8):last-child),
+  .chats:has(> .panel:nth-child(8):last-child) {
+    grid-template-rows: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  /* Only the final panel spans the full width for 3, 5 and 7 */
+  .videos:has(> .panel:nth-child(3):last-child) > .panel:nth-child(3),
+  .chats:has(> .panel:nth-child(3):last-child) > .panel:nth-child(3),
+
+  .videos:has(> .panel:nth-child(5):last-child) > .panel:nth-child(5),
+  .chats:has(> .panel:nth-child(5):last-child) > .panel:nth-child(5),
+
+  .videos:has(> .panel:nth-child(7):last-child) > .panel:nth-child(7),
+  .chats:has(> .panel:nth-child(7):last-child) > .panel:nth-child(7) {
+    grid-column: 1 / -1 !important;
+  }
+
+  .videos > .panel,
+  .chats > .panel {
+    min-height: 0 !important;
+    height: 100%;
+  }
+}
+
 
