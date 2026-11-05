@@ -54,6 +54,7 @@ button:hover { background: #772ce8; }
 }
 
 /* Both sections use flexible 2-column grids */
+
 .videos,
 .chats {
   display: grid;
@@ -64,6 +65,18 @@ button:hover { background: #772ce8; }
   min-height: 0;
   align-content: stretch;
 }
+
+/* Three panels: two on top, one across the bottom */
+.videos:has(.panel:nth-child(3):last-child),
+.chats:has(.panel:nth-child(3):last-child) {
+  grid-template-rows: 1fr 1fr;
+}
+
+.videos:has(.panel:nth-child(3):last-child) .panel:nth-child(3),
+.chats:has(.panel:nth-child(3):last-child) .panel:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
 
 /* A single stream or chat fills its entire section */
 .videos:has(.panel:only-child),
